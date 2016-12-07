@@ -3,9 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SteamTechInc.Azure.MachineLearning.Management", "SteamTechInc.Azure.MachineLearning.Management\SteamTechInc.Azure.MachineLearning.Management.xproj", "{F7356A61-C165-4976-B419-995C458312C5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "StreamTechInc.Azure.MachineLearning.Management", "SteamTechInc.Azure.MachineLearning.Management\StreamTechInc.Azure.MachineLearning.Management.xproj", "{F7356A61-C165-4976-B419-995C458312C5}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "StreamTechInc.Azure.MachineLearning.Management.ConsoleApp", "..\StreamTechInc.Azure.MachineLearning.Management.ConsoleApp\StreamTechInc.Azure.MachineLearning.Management.ConsoleApp.xproj", "{352CDE50-B3C9-4379-BFBC-094689A91D7B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4E849C2F-33A8-4D68-B954-D181C12B6109}"
+	ProjectSection(SolutionItems) = preProject
+		..\global.json = ..\global.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

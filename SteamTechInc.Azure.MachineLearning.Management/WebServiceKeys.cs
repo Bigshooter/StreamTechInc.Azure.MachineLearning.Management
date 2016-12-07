@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SteamTechInc.Azure.MachineLearning.Management
+namespace StreamTechInc.Azure.MachineLearning.Management
 {
     public class WebServiceKeys
     {

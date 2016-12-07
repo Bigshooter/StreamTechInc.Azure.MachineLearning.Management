@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace SteamTechInc.Azure.MachineLearning.Management
+namespace StreamTechInc.Azure.MachineLearning.Management
 {
     public class WebServiceProperties
     {
@@ -34,5 +34,36 @@ namespace SteamTechInc.Azure.MachineLearning.Management
 
         [JsonProperty(PropertyName = "realtimeConfiguration")]
         public RealtimeConfiguration RealtimeConfiguration { get; set; }
+
+        [JsonProperty(PropertyName = "diagnostics")]
+        public DiagnosticsConfiguration Diagnostics { get; set; }
+
+        [JsonProperty(PropertyName = "storageAccount")]
+        public StorageAccount StorageAccount { get; set; }
+
+        [JsonProperty(PropertyName = "machineLearningWorkspace")]
+        public MachineLearningWorkspace MachineLearningWorkspace { get; set; }
+
+        [JsonProperty(PropertyName = "commitmentPlan")]
+        public CommitmentPlan CommitmentPlan { get; set; }
+
+        [JsonProperty(PropertyName = "input")]
+        public ServiceInputOutputSpecification Input { get; set; }
+
+        [JsonProperty(PropertyName = "output")]
+        public ServiceInputOutputSpecification Output { get; set; }
+
+        [JsonProperty(PropertyName = "exampleRequest")]
+        public ExampleRequest ExampleRequest { get; set; }
+
+        [JsonProperty(PropertyName = "assets")]
+        public object Assets { get; set; }
+
+        [JsonProperty(PropertyName = "parameters")]
+        public object Parameters { get; set; }
+
+        [JsonProperty(PropertyName = "packageType")]
+        public object PackageType { get; set; }
+
     }
 }
