@@ -1,8 +1,11 @@
 # StreamTechInc.Azure.MachineLearning.Management
-This Rest Client will allow you to retrain existing web service and use those iLearners to provision new web services.
+
+This Rest Client will allow you to retrain existing Azure Machine Learning web services and use those iLearners that are created to provision new web services.
+To do this you first go into Azure Machine Learning UI and create a retrained web service and a predictive web service.  Now the training web service can be used as a service to produce iLearners
+and the predictive webservice can be used as a scafold for making new services with new ilearners.
 
 To use this you will need most if not all of the following:
-  * Tenant Id - 
+  * Tenant Id - Azure AD id.
   * Application Id - the id Azure gave your application when adding it to Azure Ad.
   * Application Key - the key you created in the Azure portal when adding an application to Azure AD.
   * Api Version - the version of the machine learning API you are using.
@@ -16,7 +19,7 @@ To use this you will need most if not all of the following:
 Example
 
 ``` c#
-Client newManagementClient = new Client(tenantId, applicationId, applicaitonKey, apiVersion);
+Client newManagementClient = new Client(tenantId, applicationId, applicationKey, apiVersion);
 ClientResponse response = await newManagementClient.Authenticate();
 if(response.IsSuccess)
 {
