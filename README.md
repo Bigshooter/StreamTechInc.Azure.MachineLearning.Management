@@ -3,7 +3,7 @@ This Rest Client will allow you to retrain existing web service and use those iL
 
 Example
 
-
+``` c#
 Client newManagementClient = new Client(tenantId, applicationId, applicaitonKey, apiVersion);
 ClientResponse response = await newManagementClient.Authenticate();
 if(response.IsSuccess)
@@ -16,3 +16,4 @@ else
 
 }
 
+```
