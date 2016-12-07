@@ -11,6 +11,8 @@ namespace StreamTechInc.Azure.MachineLearning.Management
     /// <summary>
     /// This client assumes you have setup an application in your Azure AD and granted the appropriate level of privledge so that
     /// the client application id and key can be used to manage your Azure ML resources.
+    /// https://docs.microsoft.com/en-us/rest/api/index?redirectedfrom=MSDN
+    /// https://docs.microsoft.com/en-gb/azure/azure-resource-manager/resource-group-create-service-principal-portal
     /// </summary>
     public class Client
     {
@@ -40,11 +42,13 @@ namespace StreamTechInc.Azure.MachineLearning.Management
         }
 
         /// <summary>
-        /// Authenticate with Azure AD, getting a bearer token so you can perform any actions against the management interface.
+        /// Authenticate with Azure AD, getting a bearer token so you can perform any actions against the management interface.  If unsuccessful check the returned message.
         /// </summary>
         /// <returns></returns>
         public async Task<ClientResponse> Authenticate()
         {
+            //https://docs.microsoft.com/en-gb/azure/active-directory/active-directory-protocols-oauth-service-to-service#request-an-access-token
+
             ClientResponse returnValue = new ClientResponse();
             returnValue.IsSuccess = false;
 
@@ -100,7 +104,7 @@ namespace StreamTechInc.Azure.MachineLearning.Management
         }
 
         /// <summary>
-        /// Attempts to create a webservice
+        /// Creates a webservice.  If unsuccessful the return message has the reason for the failure contained within it.
         /// </summary>
         /// <param name="webserviceName"></param>
         /// <param name="subscriptionId"></param>
@@ -133,5 +137,33 @@ namespace StreamTechInc.Azure.MachineLearning.Management
 
         }
 
+   
+        /// <summary>
+        /// Gets the definition of an existing web service.  If successful the response message has the json in it.  Otherwise it has the reason for the failure.
+        /// </summary>
+        /// <param name="webserviceName">name of the service you want to get</param>
+        /// <param name="subscriptionId"></param>
+        /// <param name="resourceGroupName"></param>
+        /// <returns></returns>
+        public async Task<ClientResponse> GetWebService(string webserviceName, string subscriptionId, string resourceGroupName)
+        {
+            ClientResponse clientResponse = new Management.ClientResponse();
+            //subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.MachineLearning/webServices/{webServiceName}?api-version=2016-05-01-preview
+            string getUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
+
+            HttpResponseMessage response = await _client.GetAsync(getUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                clientResponse.IsSuccess = true;
+            }
+            else
+            {
+                clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                clientResponse.IsSuccess = false;
+            }
+
+            return clientResponse;
+        }
     }
 }
