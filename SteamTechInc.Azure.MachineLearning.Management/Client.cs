@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -118,14 +120,19 @@ namespace StreamTechInc.Azure.MachineLearning.Management
 
             string putUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
 
-            string json = JsonConvert.SerializeObject(webService);
-            StringContent payload = new StringContent(json,System.Text.Encoding.UTF8,"application/json");
+            StreamReader temp = File.OpenText(@"C:\temp\webservice_edited.json");
+            string tempJson = await temp.ReadToEndAsync();
+
+
+            string json = JsonConvert.SerializeObject(webService,Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+            StringContent payload = new StringContent(tempJson, System.Text.Encoding.UTF8,"application/json");
 
 
             HttpResponseMessage response = await _client.PutAsync(putUrl, payload);
             if(response.IsSuccessStatusCode)
             {
                 returnValue.IsSuccess = true;
+                returnValue.ResponseMessage = await response.Content.ReadAsStringAsync();
             }
             else
             {

@@ -18,12 +18,12 @@ namespace StreamTechInc.Azure.MachineLearning.Management
         public DateTime ModifiedOn { get; set; }
 
         [JsonProperty(PropertyName = "provisioningState")]
-        public ProvisioningState ProvisioningState { get; set; }
+        public string ProvisioningState { get; set; }
 
         [JsonProperty(PropertyName = "keys")]
         public WebServiceKeys Keys { get; set; }
 
-        [JsonProperty(PropertyName = "readyOnly")]
+        [JsonProperty(PropertyName = "readOnly")]
         public bool ReadOnly { get; set; }
 
         [JsonProperty(PropertyName = "swaggerLocation")]
@@ -57,13 +57,16 @@ namespace StreamTechInc.Azure.MachineLearning.Management
         public ExampleRequest ExampleRequest { get; set; }
 
         [JsonProperty(PropertyName = "assets")]
-        public object Assets { get; set; }
+        public dynamic Assets { get; set; }
 
         [JsonProperty(PropertyName = "parameters")]
-        public object Parameters { get; set; }
+        public dynamic Parameters { get; set; }
 
         [JsonProperty(PropertyName = "packageType")]
-        public object PackageType { get; set; }
+        public dynamic PackageType { get; set; }
+
+        [JsonProperty(PropertyName = "package")]
+        public dynamic Package { get; set; }
 
     }
 }

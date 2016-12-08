@@ -1,6 +1,6 @@
 # StreamTechInc.Azure.MachineLearning.Management
 
-This Rest Client will allow you to retrain existing Azure Machine Learning web services and use those iLearners that are created to provision new web services.
+This Rest Client will allow an authorized application to retrain existing Azure Machine Learning web services and use those iLearners that are created to provision new web services.
 To do this you first go into Azure Machine Learning UI and create a retrained web service and a predictive web service.  Now the training web service can be used as a service to produce iLearners
 and the predictive webservice can be used as a scafold for making new services with new ilearners.
 

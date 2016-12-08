@@ -8,10 +8,10 @@ namespace StreamTechInc.Azure.MachineLearning.Management
 {
     public class ColumnDescriptor
     {
-        [JsonProperty(PropertyName = "Type")]
+        [JsonProperty(PropertyName = "type")]
         public string Type { get; set; }
 
-        [JsonProperty(PropertyName = "Format")]
+        [JsonProperty(PropertyName = "format")]
         public string Format { get; set; }
 
         [JsonProperty(PropertyName = "x-ms-isnullable")]
