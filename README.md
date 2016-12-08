@@ -19,25 +19,86 @@ To use this you will need most if not all of the following:
 Example
 
 ``` c#
+     
+
 Client newManagementClient = new Client(tenantId, applicationId, applicationKey, apiVersion);
-ClientResponse response = await newManagementClient.Authenticate();
-if(response.IsSuccess)
+
+if(newManagementClient.Authenticate().Result.IsSuccess)
 {
-    //authentication successful, do some work
-    response = await newManagementClient.GetWebService("webservicename", subscriptionId, resourceGroupName);
+
+    string predictiveWebServiceScafold = "MultiClassRetrai.2016.12.7.19.47.0.349";
+
+    ClientResponse response = newManagementClient.GetWebService(predictiveWebServiceScafold, subscriptionId, resourceGroupName).Result;
     if(response.IsSuccess)
     {
-        WebService myService = JsonConvert.DeserializeObject<WebService>(response.ResponseMessage);
+        //this is temporary until I figure out what is wrong with json serialization
+        List<string> problems = new List<string> { "Name","Type","LocationInfo","Uri","Credentials",
+                                                    "Title","Description","Properties","Format","OutputPorts",
+                                                    "Edges", "GlobalParameters", "Inputs","GraphParameters","Nodes",
+                                                    "SourceNodeId","SourcePortId","TargetNodeId","TargetPortId","AssetId",
+                                                    "Parameters","InputId", "OutputId"};
+        string temp = response.ResponseMessage;
+        foreach (string problem in problems)
+        {
+            char fistLetter = problem[0];
+            string replacementString = fistLetter.ToString().ToLower() + problem.Substring(1, problem.Length - 1);
+            temp = temp.Replace(problem, replacementString);
+        }
+        
+        WebService predictiveWebService = JsonConvert.DeserializeObject<WebService>(temp, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+
+        predictiveWebService.Name = "HelloWorld";
+        predictiveWebService.Id = "";
+        predictiveWebService.Properties.Title = "HelloWorld";
+        predictiveWebService.Properties.StorageAccount.Key = storageAccountKey;
+        predictiveWebService.Properties.CommitmentPlan = new CommitmentPlan();
+        predictiveWebService.Properties.CommitmentPlan.Id = webservicePlanId;
+        predictiveWebService.Properties.MachineLearningWorkspace = new MachineLearningWorkspace();
+        predictiveWebService.Properties.MachineLearningWorkspace.Id = workspaceId;
+        //remove provisioning state, the service wont allow it.
+        predictiveWebService.Properties.ProvisioningState = "";
+        predictiveWebService.Properties.SwaggerLocation = "";
+        predictiveWebService.Type = "";
+
+        response = newManagementClient.CreateUpdateWebService("HelloWorld", subscriptionId, resourceGroupName, predictiveWebService).Result;
+        if(response.IsSuccess)
+        {
+            WebService newPredictiveWebService = JsonConvert.DeserializeObject<WebService>(response.ResponseMessage);
+            if(newPredictiveWebService.Properties.ProvisioningState == "Succeeded")
+            {
+                //all good
+
+            }
+            else if(newPredictiveWebService.Properties.ProvisioningState == "Failed")
+            {
+                //add bad
+            }
+            else
+            {
+                //unknown or provisioning
+                //should be a loop
+                Thread.Sleep(5000);
+                response = newManagementClient.GetWebService("HelloWorld", subscriptionId, resourceGroupName).Result;
+                if(response.IsSuccess)
+                {
+                    WebService newPredictiveWebService2 = JsonConvert.DeserializeObject<WebService>(response.ResponseMessage);
+                }
+                else
+                {
+
+                }
+            }
+        }
+        else
+        {
+            Console.WriteLine(response.ResponseMessage);
+        }
+
+
     }
     else
     {
 
     }
-
-}
-else
-{
-
-}
 
 ```
