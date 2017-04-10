@@ -1,5 +1,7 @@
 {
-  "version": "1.0.0-*",
+  "title": "SteamTechInc.Azure.MachineLearning.Management",
+  "description": "Library To Interact with Azure Machine Learning Mangement Rest Interface",
+  "version": "0.0.1-*",
 
   "dependencies": {
     "NETStandard.Library": "1.6.0",
