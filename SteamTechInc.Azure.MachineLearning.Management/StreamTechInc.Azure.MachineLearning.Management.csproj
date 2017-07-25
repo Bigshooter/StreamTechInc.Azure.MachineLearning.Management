@@ -15,12 +15,14 @@
     <RootNamespace>StreamTechInc.Azure.MachineLearning.Management</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Bigshooter</Authors>
     <Copyright>Stream Technologies Inc. 2017</Copyright>
     <PackageProjectUrl>https://github.com/Bigshooter/StreamTechInc.Azure.MachineLearning.Management</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/Bigshooter/StreamTechInc.Azure.MachineLearning.Management/blob/master/LICENSE</PackageLicenseUrl>
     <PackageTags>Administration Azure Machine Learning</PackageTags>
+    <PackageReleaseNotes>Updated to fix bug with Create
+Added Delete</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
