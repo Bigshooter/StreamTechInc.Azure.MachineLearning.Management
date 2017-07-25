@@ -65,26 +65,26 @@ namespace StreamTechInc.Azure.MachineLearning.Management
                 body += "client_secret=" + _applicationKey + "&";
                 body += "resource=" + _resourceUri;
 
-                StringContent payload = new StringContent(body,System.Text.Encoding.UTF8, "application/x-www-form-urlencoded");
+                StringContent payload = new StringContent(body, System.Text.Encoding.UTF8, "application/x-www-form-urlencoded");
 
                 HttpResponseMessage authResponse = await AuthClient.PostAsync("oauth2/token", payload);
 
-                if(authResponse.IsSuccessStatusCode)
+                if (authResponse.IsSuccessStatusCode)
                 {
                     //store bearer token for use.                   
                     dynamic returnPayload = JsonConvert.DeserializeObject(await authResponse.Content.ReadAsStringAsync());
-                    if(returnPayload!=null)
+                    if (returnPayload != null)
                     {
-                        if(returnPayload.token_type == "Bearer")
+                        if (returnPayload.token_type == "Bearer")
                         {
                             _bearerToken = returnPayload.access_token;
                             CreateClient();
                             returnValue.IsSuccess = true;
                         }
 
-                        
+
                     }
-                     
+
                 }
                 else
                 {
@@ -121,18 +121,13 @@ namespace StreamTechInc.Azure.MachineLearning.Management
 
             string putUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
 
-            StreamReader temp = File.OpenText(@"C:\temp\webservice_edited.json");
-            string tempJson = await temp.ReadToEndAsync();
-
-
-            string json = JsonConvert.SerializeObject(webService,Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-
+            string json = JsonConvert.SerializeObject(webService, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
 
             //remove values that cause the azure ML service to have a fit
             JObject remover = JsonConvert.DeserializeObject<JObject>(json);
             remover.Remove("id");
             remover.Remove("type");
-            JToken properties = remover.Children<JProperty>().First(x => x.Name == "properties").First();          
+            JToken properties = remover.Children<JProperty>().First(x => x.Name == "properties").First();
             properties.Children<JProperty>().First(x => x.Name == "createdOn").Remove();
             //properties.Children<JProperty>().First(x => x.Name == "keys").Remove();
             properties.Children<JProperty>().First(x => x.Name == "modifiedOn").Remove();
@@ -143,11 +138,11 @@ namespace StreamTechInc.Azure.MachineLearning.Management
 
             json = JsonConvert.SerializeObject(remover);
 
-            StringContent payload = new StringContent(tempJson, System.Text.Encoding.UTF8,"application/json");
+            StringContent payload = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
 
             HttpResponseMessage response = await _client.PutAsync(putUrl, payload);
-            if(response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 returnValue.IsSuccess = true;
                 returnValue.ResponseMessage = await response.Content.ReadAsStringAsync();
@@ -162,7 +157,7 @@ namespace StreamTechInc.Azure.MachineLearning.Management
 
         }
 
-   
+
         /// <summary>
         /// Gets the definition of an existing web service.  If successful the response message has the json in it.  Otherwise it has the reason for the failure.
         /// </summary>
@@ -191,6 +186,7 @@ namespace StreamTechInc.Azure.MachineLearning.Management
             return clientResponse;
         }
 
+
         /// <summary>
         /// Gets the keys created to communicate with the new webservice.
         /// </summary>
@@ -200,12 +196,35 @@ namespace StreamTechInc.Azure.MachineLearning.Management
         /// <returns></returns>
         public async Task<ClientResponse> GetWebServiceKeys(string webserviceName, string subscriptionId, string resourceGroupName)
         {
-            
+
             ClientResponse clientResponse = new Management.ClientResponse();
             ///subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.MachineLearning/webServices/{webServiceName}/listKeys?api-version=2016-05-01-preview
             string getUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}/listKeys?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
 
             HttpResponseMessage response = await _client.GetAsync(getUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                clientResponse.IsSuccess = true;
+            }
+            else
+            {
+                clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                clientResponse.IsSuccess = false;
+            }
+
+            return clientResponse;
+        }
+
+
+        public async Task<ClientResponse> DeleteWebService(string webserviceName, string subscriptionId, string resourceGroupName)
+        {
+
+            ClientResponse clientResponse = new Management.ClientResponse();
+            ///subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.MachineLearning/webServices/{webServiceName}?api-version=2016-05-01-preview
+            string deleteUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
+
+            HttpResponseMessage response = await _client.DeleteAsync(deleteUrl);
             if (response.IsSuccessStatusCode)
             {
                 clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();

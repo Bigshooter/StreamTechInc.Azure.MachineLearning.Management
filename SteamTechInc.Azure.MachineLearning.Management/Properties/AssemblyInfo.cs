@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("StreamTechInc")]
-[assembly: AssemblyProduct("SteamTechInc.Azure.MachineLearning.Management")]
+[assembly: AssemblyProduct("StreamTechInc.Azure.MachineLearning.Management")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible

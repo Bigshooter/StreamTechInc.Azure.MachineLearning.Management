@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <AssemblyName>StreamTechInc.Azure.MachineLearning.Management.ConsoleApp</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <PackageId>StreamTechInc.Azure.MachineLearning.Management.ConsoleApp</PackageId>
+    <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SteamTechInc.Azure.MachineLearning.Management\StreamTechInc.Azure.MachineLearning.Management.csproj" />
+  </ItemGroup>
+
+</Project>

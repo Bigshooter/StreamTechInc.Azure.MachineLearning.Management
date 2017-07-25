@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Library To Interact with Azure Machine Learning Mangement Rest Interface</Description>
+    <AssemblyTitle>SteamTechInc.Azure.MachineLearning.Management</AssemblyTitle>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <AssemblyName>StreamTechInc.Azure.MachineLearning.Management</AssemblyName>
+    <PackageId>StreamTechInc.Azure.MachineLearning.Management</PackageId>
+    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <RootNamespace>StreamTechInc.Azure.MachineLearning.Management</RootNamespace>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Version>1.0.0</Version>
+    <Authors>Bigshooter</Authors>
+    <Copyright>Stream Technologies Inc. 2017</Copyright>
+    <PackageProjectUrl>https://github.com/Bigshooter/StreamTechInc.Azure.MachineLearning.Management</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Bigshooter/StreamTechInc.Azure.MachineLearning.Management/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageTags>Administration Azure Machine Learning</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+
+</Project>
