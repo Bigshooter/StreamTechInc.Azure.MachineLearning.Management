@@ -27,6 +27,7 @@ namespace StreamTechInc.Azure.MachineLearning.Management
         private string _applicationKey;
         private string _managementLoginUri = "https://login.microsoftonline.com/{0}/";
         private string _resourceUri = "https://management.azure.com/";
+        private DateTime _authExiryDateTime;
 
         /// <summary>
         /// Send in enough information that the client can authenticate on behalf of the application and get a bearer token, 
@@ -79,6 +80,11 @@ namespace StreamTechInc.Azure.MachineLearning.Management
                         {
                             _bearerToken = returnPayload.access_token;
                             CreateClient();
+                            //capture expiry time
+                            long exiryTimeInSeconds = long.Parse(returnPayload.expires_on.Value);
+                            DateTimeConvert dateTimeConvert = new DateTimeConvert();
+                            dateTimeConvert.SetTime(exiryTimeInSeconds);
+                            _authExiryDateTime = dateTimeConvert.GetDateTime();
                             returnValue.IsSuccess = true;
                         }
 
@@ -116,44 +122,57 @@ namespace StreamTechInc.Azure.MachineLearning.Management
         /// <returns></returns>
         public async Task<ClientResponse> CreateUpdateWebService(string webserviceName, string subscriptionId, string resourceGroupName, WebService webService)
         {
-            ClientResponse returnValue = new ClientResponse();
-            returnValue.IsSuccess = false;
+            ClientResponse clientResponse = new ClientResponse();
+            clientResponse.IsSuccess = false;
 
-            string putUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
-
-            string json = JsonConvert.SerializeObject(webService, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-
-            //remove values that cause the azure ML service to have a fit
-            JObject remover = JsonConvert.DeserializeObject<JObject>(json);
-            remover.Remove("id");
-            remover.Remove("type");
-            JToken properties = remover.Children<JProperty>().First(x => x.Name == "properties").First();
-            properties.Children<JProperty>().First(x => x.Name == "createdOn").Remove();
-            //properties.Children<JProperty>().First(x => x.Name == "keys").Remove();
-            properties.Children<JProperty>().First(x => x.Name == "modifiedOn").Remove();
-            properties.Children<JProperty>().First(x => x.Name == "provisioningState").Remove();
-            properties.Children<JProperty>().First(x => x.Name == "swaggerLocation").Remove();
-            properties.Children<JProperty>().First(x => x.Name == "diagnostics").First().Children<JProperty>().First(z => z.Name == "expiry").Remove();
-            properties.Children<JProperty>().First(x => x.Name == "exampleRequest").First().Children<JProperty>().First(z => z.Name == "globalParameters").Remove();
-
-            json = JsonConvert.SerializeObject(remover);
-
-            StringContent payload = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-
-
-            HttpResponseMessage response = await _client.PutAsync(putUrl, payload);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                returnValue.IsSuccess = true;
-                returnValue.ResponseMessage = await response.Content.ReadAsStringAsync();
+                //reauth if our bearer token has expired
+                if (_authExiryDateTime.AddMinutes(-2) <= DateTime.UtcNow)
+                {
+                    await Authenticate();
+                }
+
+                string putUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
+
+                string json = JsonConvert.SerializeObject(webService, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+
+                //remove values that cause the azure ML service to have a fit
+                JObject remover = JsonConvert.DeserializeObject<JObject>(json);
+                remover.Remove("id");
+                remover.Remove("type");
+                JToken properties = remover.Children<JProperty>().First(x => x.Name == "properties").First();
+                properties.Children<JProperty>().First(x => x.Name == "createdOn").Remove();
+                //properties.Children<JProperty>().First(x => x.Name == "keys").Remove();
+                properties.Children<JProperty>().First(x => x.Name == "modifiedOn").Remove();
+                properties.Children<JProperty>().First(x => x.Name == "provisioningState").Remove();
+                properties.Children<JProperty>().First(x => x.Name == "swaggerLocation").Remove();
+                properties.Children<JProperty>().First(x => x.Name == "diagnostics").First().Children<JProperty>().First(z => z.Name == "expiry").Remove();
+                properties.Children<JProperty>().First(x => x.Name == "exampleRequest").First().Children<JProperty>().First(z => z.Name == "globalParameters").Remove();
+
+                json = JsonConvert.SerializeObject(remover);
+
+                StringContent payload = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+
+                HttpResponseMessage response = await _client.PutAsync(putUrl, payload);
+                if (response.IsSuccessStatusCode)
+                {
+                    clientResponse.IsSuccess = true;
+                    clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                }
+                else
+                {
+                    clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                    clientResponse.IsSuccess = false;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                returnValue.ResponseMessage = await response.Content.ReadAsStringAsync();
-                returnValue.IsSuccess = false;
+                clientResponse.ResponseMessage = ex.ToString();
             }
 
-            return returnValue;
+            return clientResponse;
 
         }
 
@@ -167,20 +186,36 @@ namespace StreamTechInc.Azure.MachineLearning.Management
         /// <returns></returns>
         public async Task<ClientResponse> GetWebService(string webserviceName, string subscriptionId, string resourceGroupName)
         {
-            ClientResponse clientResponse = new Management.ClientResponse();
-            //subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.MachineLearning/webServices/{webServiceName}?api-version=2016-05-01-preview
-            string getUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
+            ClientResponse clientResponse = new ClientResponse();
+            clientResponse.IsSuccess = false;
 
-            HttpResponseMessage response = await _client.GetAsync(getUrl);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
-                clientResponse.IsSuccess = true;
+                //reauth if our bearer token has expired
+                if (_authExiryDateTime.AddMinutes(-2) <= DateTime.UtcNow)
+                {
+                    await Authenticate();
+                }
+
+                //subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.MachineLearning/webServices/{webServiceName}?api-version=2016-05-01-preview
+                string getUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
+
+                HttpResponseMessage response = await _client.GetAsync(getUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                    clientResponse.IsSuccess = true;
+                }
+                else
+                {
+                    clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                    clientResponse.IsSuccess = false;
+                }
+
             }
-            else
+            catch (Exception ex)
             {
-                clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
-                clientResponse.IsSuccess = false;
+                clientResponse.ResponseMessage = ex.ToString();
             }
 
             return clientResponse;
@@ -196,21 +231,36 @@ namespace StreamTechInc.Azure.MachineLearning.Management
         /// <returns></returns>
         public async Task<ClientResponse> GetWebServiceKeys(string webserviceName, string subscriptionId, string resourceGroupName)
         {
+            ClientResponse clientResponse = new ClientResponse();
+            clientResponse.IsSuccess = false;
 
-            ClientResponse clientResponse = new Management.ClientResponse();
-            ///subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.MachineLearning/webServices/{webServiceName}/listKeys?api-version=2016-05-01-preview
-            string getUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}/listKeys?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
-
-            HttpResponseMessage response = await _client.GetAsync(getUrl);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
-                clientResponse.IsSuccess = true;
+                //reauth if our bearer token has expired
+                if (_authExiryDateTime.AddMinutes(-2) <= DateTime.UtcNow)
+                {
+                    await Authenticate();
+                }
+
+                ///subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.MachineLearning/webServices/{webServiceName}/listKeys?api-version=2016-05-01-preview
+                string getUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}/listKeys?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
+
+                HttpResponseMessage response = await _client.GetAsync(getUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                    clientResponse.IsSuccess = true;
+                }
+                else
+                {
+                    clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                    clientResponse.IsSuccess = false;
+                }
+
             }
-            else
+            catch (Exception ex)
             {
-                clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
-                clientResponse.IsSuccess = false;
+                clientResponse.ResponseMessage = ex.ToString();
             }
 
             return clientResponse;
@@ -220,20 +270,36 @@ namespace StreamTechInc.Azure.MachineLearning.Management
         public async Task<ClientResponse> DeleteWebService(string webserviceName, string subscriptionId, string resourceGroupName)
         {
 
-            ClientResponse clientResponse = new Management.ClientResponse();
-            ///subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.MachineLearning/webServices/{webServiceName}?api-version=2016-05-01-preview
-            string deleteUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
+            ClientResponse clientResponse = new ClientResponse();
+            clientResponse.IsSuccess = false;
 
-            HttpResponseMessage response = await _client.DeleteAsync(deleteUrl);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
-                clientResponse.IsSuccess = true;
+                //reauth if our bearer token has expired
+                if (_authExiryDateTime.AddMinutes(-2) <= DateTime.UtcNow)
+                {
+                    await Authenticate();
+                }
+
+                ///subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.MachineLearning/webServices/{webServiceName}?api-version=2016-05-01-preview
+                string deleteUrl = string.Format("subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.MachineLearning/webServices/{2}?api-version={3}", subscriptionId, resourceGroupName, webserviceName, _apiVersion);
+
+                HttpResponseMessage response = await _client.DeleteAsync(deleteUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                    clientResponse.IsSuccess = true;
+                }
+                else
+                {
+                    clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
+                    clientResponse.IsSuccess = false;
+                }
+
             }
-            else
+            catch (Exception ex)
             {
-                clientResponse.ResponseMessage = await response.Content.ReadAsStringAsync();
-                clientResponse.IsSuccess = false;
+                clientResponse.ResponseMessage = ex.ToString();
             }
 
             return clientResponse;
